@@ -4,10 +4,10 @@ import java.util.Map;
 
 import com.github.mob41.gtfssp.gtfs.GtfsStop;
 
-public class LocalizedStops extends LocalizedGtfs {
+public class LocalizedStops extends LocalizedGtfsData {
 
 	public LocalizedStops(GtfsStop[] defaultLocaleArray) {
-		super(stopsToMaps(defaultLocaleArray));
+		super("stops", stopsToMaps(defaultLocaleArray));
 	}
 	
 	public boolean setLocale(String locale, GtfsStop[] array) {

@@ -25,7 +25,7 @@ public class GtfsStop extends GtfsData {
 	public String stop_timezone;
 	
 	public GtfsStop() {
-		
+		super("stops");
 	}
 
 	/***

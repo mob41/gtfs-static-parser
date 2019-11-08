@@ -31,29 +31,29 @@ public class GtfsCalendar extends GtfsData {
 	public int end_date;
 	
 	public GtfsCalendar() {
-		
+		super("calendars");
 	}
 
 	/***
-	 * Get an array of GTFS-static-formatted calendar from an InputStream
+	 * Get an array of GTFS-static-formatted calendars from an InputStream
 	 * 
 	 * @param in InputStream with GTFS static data
-	 * @return An array of calendar
+	 * @return An array of calendars
 	 * @throws IOException
 	 */
-	public static GtfsCalendar[] getCalendar(InputStream in) throws IOException {
-		return getCalendar(in, true);
+	public static GtfsCalendar[] getCalendars(InputStream in) throws IOException {
+		return getCalendars(in, true);
 	}
 	
 	/***
-	 * Get an array of GTFS-static-formatted calendar from an InputStream
+	 * Get an array of GTFS-static-formatted calendars from an InputStream
 	 * 
 	 * @param in InputStream with GTFS static data
 	 * @param skipHeader Skip the first row containing header names
-	 * @return An array of calendar
+	 * @return An array of calendars
 	 * @throws IOException
 	 */
-	public static GtfsCalendar[] getCalendar(InputStream in, boolean skipHeader) throws IOException {
+	public static GtfsCalendar[] getCalendars(InputStream in, boolean skipHeader) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 		
 		if (skipHeader) {

@@ -23,7 +23,7 @@ public class GtfsFareAttribute extends GtfsData {
 	public String agency_id;
 	
 	public GtfsFareAttribute() {
-		
+		super("fare_attributes");
 	}
 
 	/***

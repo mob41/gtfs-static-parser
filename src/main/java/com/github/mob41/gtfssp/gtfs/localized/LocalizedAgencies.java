@@ -4,10 +4,10 @@ import java.util.Map;
 
 import com.github.mob41.gtfssp.gtfs.GtfsAgency;
 
-public class LocalizedAgencies extends LocalizedGtfs {
+public class LocalizedAgencies extends LocalizedGtfsData {
 
 	public LocalizedAgencies(GtfsAgency[] defaultLocaleArray) {
-		super(agenciesToMaps(defaultLocaleArray));
+		super("agencies", agenciesToMaps(defaultLocaleArray));
 	}
 	
 	public boolean setLocale(String locale, GtfsAgency[] array) {

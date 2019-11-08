@@ -10,6 +10,10 @@ import java.util.List;
 
 public class GtfsAgency extends GtfsData{
 	
+	public GtfsAgency() {
+		super("agencies");
+	}
+
 	public String agency_id;
 
 	public String agency_name;

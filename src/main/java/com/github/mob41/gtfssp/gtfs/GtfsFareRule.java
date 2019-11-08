@@ -19,7 +19,7 @@ public class GtfsFareRule extends GtfsData {
 	public int destination_id;
 	
 	public GtfsFareRule() {
-		
+		super("fare_rules");
 	}
 
 	/***

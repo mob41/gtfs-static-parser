@@ -4,10 +4,10 @@ import java.util.Map;
 
 import com.github.mob41.gtfssp.gtfs.GtfsRoute;
 
-public class LocalizedRoutes extends LocalizedGtfs {
+public class LocalizedRoutes extends LocalizedGtfsData {
 
 	public LocalizedRoutes(GtfsRoute[] defaultLocaleArray) {
-		super(routesToMaps(defaultLocaleArray));
+		super("routes", routesToMaps(defaultLocaleArray));
 	}
 	
 	public boolean setLocale(String locale, GtfsRoute[] array) {

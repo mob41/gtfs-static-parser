@@ -6,6 +6,12 @@ import java.util.Map;
 
 public class GtfsData {
 	
+	private final String dataType;
+	
+	public GtfsData(String dataType) {
+		this.dataType = dataType;
+	}
+
 	/***
 	 * Returns this GtfsData as a HashMap.
 	 * @return HashMap GTFS data.
@@ -23,6 +29,10 @@ public class GtfsData {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public String getDataType() {
+		return dataType;
 	}
 
 }

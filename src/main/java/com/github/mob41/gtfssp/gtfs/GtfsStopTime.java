@@ -29,7 +29,7 @@ public class GtfsStopTime extends GtfsData {
 	public int timepoint;
 	
 	public GtfsStopTime() {
-		
+		super("stop_times");
 	}
 
 	/***

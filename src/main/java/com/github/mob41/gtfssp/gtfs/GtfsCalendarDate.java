@@ -17,7 +17,7 @@ public class GtfsCalendarDate extends GtfsData {
 	public int exception_type;
 	
 	public GtfsCalendarDate() {
-		
+		super("calendar_dates");
 	}
 
 	/***

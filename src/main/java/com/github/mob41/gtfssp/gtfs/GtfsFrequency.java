@@ -19,7 +19,7 @@ public class GtfsFrequency extends GtfsData {
 	public int headway_secs;
 	
 	public GtfsFrequency() {
-		
+		super("frequencies");
 	}
 
 	/***

@@ -17,7 +17,7 @@ public class GtfsTrip extends GtfsData {
 	public String trip_id;
 	
 	public GtfsTrip() {
-		
+		super("trips");
 	}
 
 	/***

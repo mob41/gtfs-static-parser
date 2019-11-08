@@ -23,7 +23,7 @@ public class GtfsRoute extends GtfsData {
 	public String route_url;
 	
 	public GtfsRoute() {
-		
+		super("routes");
 	}
 
 	/***
