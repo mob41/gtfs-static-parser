@@ -7,9 +7,9 @@ import java.util.Map;
 import com.github.mob41.gtfssp.gtfs.GtfsCalendarDate;
 import com.github.mob41.gtfssp.gtfs.GtfsData;
 
-public class GtfsCalendarDateBuilder extends AbstractGtfsBuilder<GtfsCalendarDate> {
+public class GtfsCalendarDatesBuilder extends AbstractGtfsBuilder<GtfsCalendarDate> {
 
-	public GtfsCalendarDateBuilder() {
+	public GtfsCalendarDatesBuilder() {
 		super("calendar_dates");
 	}
 

@@ -153,11 +153,13 @@ public abstract class AbstractGtfsBuilder<T> {
 	
 	/***
 	 * Finds the deltas in each localized GTFS data and combines them into one <code>HashMap</code> array.
+	 * If default locale maps are not built, previously built maps will be returned instead.
 	 * @return HashMap array
 	 */
 	public List<Map<String, String>> getLocalizedMaps() {
 		if (defaultLocaleMaps == null) {
-			throw new IllegalStateException("Default localized maps are not built and set.");
+			return maps;
+			//throw new IllegalStateException("Default localized maps are not built and set.");
 		}
 		
 		List<String> deltas = new ArrayList<String>();
@@ -249,13 +251,9 @@ public abstract class AbstractGtfsBuilder<T> {
 		String row = "";
 		for (int i = 0; i < headers.size(); i++) {
 			val = headers.get(i);
-			if (val.contains(",") || val.contains(" ")) {
-				row += "\"" + val + "\"";
-			} else {
-				row += val;
-			}
+			row += val;
 			if (i != headers.size() - 1) {
-				row += ", ";
+				row += ",";
 			}
 		}
 		rows.add(row);
@@ -264,13 +262,9 @@ public abstract class AbstractGtfsBuilder<T> {
 			row = "";
 			for (int j = 0; j < headers.size(); j++) {
 				val = maps.get(i).get(headers.get(j));
-				if (val.contains(",") || val.contains(" ")) {
-					row += "\"" + val + "\"";
-				} else {
-					row += val;
-				}
+				row += val;
 				if (j != headers.size() - 1) {
-					row += ", ";
+					row += ",";
 				}
 			}
 			rows.add(row);
@@ -280,8 +274,8 @@ public abstract class AbstractGtfsBuilder<T> {
 		for (String str : rows) {
 			writer.println(str);
 		}
-		writer.flush();
-		writer.close();
+		//writer.flush();
+		//writer.close();
 	}
 
 	/***
