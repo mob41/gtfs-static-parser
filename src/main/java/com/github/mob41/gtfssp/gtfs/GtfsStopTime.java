@@ -1,22 +1,16 @@
 package com.github.mob41.gtfssp.gtfs;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 public class GtfsStopTime extends GtfsData {
 	
-	public int trip_id;
+	public String trip_id;
 	
 	public String arrival_time;
 	
 	public String departure_time;
 	
-	public int stop_id;
+	public String stop_id;
 	
 	public int stop_sequence;
 	
@@ -26,70 +20,22 @@ public class GtfsStopTime extends GtfsData {
 	
 	public int drop_off_type;
 	
+	public double shape_dist_traveled;
+	
 	public int timepoint;
 	
-	public GtfsStopTime() {
-		super("stop_times");
-	}
-
-	/***
-	 * Get an array of GTFS-static-formatted stop times from an InputStream
-	 * 
-	 * @param in InputStream with GTFS static data
-	 * @return An array of stop times
-	 * @throws IOException
-	 */
-	public static GtfsStopTime[] getStopTimes(InputStream in) throws IOException {
-		return getStopTimes(in, true);
-	}
-	
-	/***
-	 * Get an array of GTFS-static-formatted stop times from an InputStream
-	 * 
-	 * @param in InputStream with GTFS static data
-	 * @param skipHeader Skip the first row containing header names
-	 * @return An array of stop times
-	 * @throws IOException
-	 */
-	public static GtfsStopTime[] getStopTimes(InputStream in, boolean skipHeader) throws IOException {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+	public GtfsStopTime(Map<String, String> map) {
+		super("stop_times", map);
 		
-		if (skipHeader) {
-			reader.readLine();
-		}
-		
-		List<GtfsStopTime> list = new ArrayList<GtfsStopTime>();
-		String[] splits;
-		String line;
-		GtfsStopTime obj;
-		while ((line = reader.readLine()) != null) {
-			splits = line.split(",");
-			if (splits.length < 9) {
-			    throw new IOException("Invalid stop_times.txt structure with column length less than 7: " + splits.length);
-			}
-			
-			obj = new GtfsStopTime();
-			
-			obj.trip_id = Integer.parseInt(splits[0]);
-			obj.arrival_time = splits[1];
-			obj.departure_time = splits[2];
-			obj.stop_id = Integer.parseInt(splits[3]);
-			obj.stop_sequence = Integer.parseInt(splits[4]);
-			obj.stop_headsign = splits[5];
-			obj.pickup_type = Integer.parseInt(splits[6]);
-			obj.drop_off_type = Integer.parseInt(splits[7]);
-			obj.timepoint = Integer.parseInt(splits[8]);
-			
-			list.add(obj);
-		}
-		
-		reader.close();
-		
-		GtfsStopTime[] out = new GtfsStopTime[list.size()];
-		for (int i = 0; i < out.length; i++) {
-			out[i] = list.get(i);
-		}
-		
-		return out;
+		trip_id = map.get("trip_id");
+		arrival_time = map.get("arrival_time");
+		departure_time = map.get("departure_time");
+		stop_id = map.get("stop_id");
+		stop_sequence = Integer.parseInt(map.get("stop_sequence"));
+		stop_headsign = map.get("stop_headsign");
+		pickup_type = map.containsKey("pickup_type") ? Integer.parseInt(map.get("pickup_type")) : -1;
+		drop_off_type = map.containsKey("drop_off_type") ? Integer.parseInt(map.get("drop_off_type")) : -1;
+		shape_dist_traveled =  map.containsKey("shape_dist_traveled") ? Double.parseDouble(map.get("shape_dist_traveled")) : -1;
+		timepoint =  map.containsKey("timepoint") ? Integer.parseInt(map.get("timepoint")) : -1;
 	}
 }

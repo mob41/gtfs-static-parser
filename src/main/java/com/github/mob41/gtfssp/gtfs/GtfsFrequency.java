@@ -1,16 +1,10 @@
 package com.github.mob41.gtfssp.gtfs;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 public class GtfsFrequency extends GtfsData {
 	
-	public int trip_id;
+	public String trip_id;
 	
 	public String start_time;
 	
@@ -18,62 +12,15 @@ public class GtfsFrequency extends GtfsData {
 	
 	public int headway_secs;
 	
-	public GtfsFrequency() {
-		super("frequencies");
-	}
-
-	/***
-	 * Get an array of GTFS-static-formatted frequencies from an InputStream
-	 * 
-	 * @param in InputStream with GTFS static data
-	 * @return An array of frequencies
-	 * @throws IOException
-	 */
-	public static GtfsFrequency[] getFrequencies(InputStream in) throws IOException {
-		return getFrequencies(in, true);
-	}
+	public int exact_times;
 	
-	/***
-	 * Get an array of GTFS-static-formatted frequencies from an InputStream
-	 * 
-	 * @param in InputStream with GTFS static data
-	 * @param skipHeader Skip the first row containing header names
-	 * @return An array of frequencies
-	 * @throws IOException
-	 */
-	public static GtfsFrequency[] getFrequencies(InputStream in, boolean skipHeader) throws IOException {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+	public GtfsFrequency(Map<String, String> map) {
+		super("frequencies", map);
 		
-		if (skipHeader) {
-			reader.readLine();
-		}
-		
-		List<GtfsFrequency> list = new ArrayList<GtfsFrequency>();
-		String[] splits;
-		String line;
-		GtfsFrequency obj;
-		while ((line = reader.readLine()) != null) {
-			splits = line.split(",");
-			if (splits.length < 3) {
-			    throw new IOException("Invalid frequencies.txt structure with column length less than 7: " + splits.length);
-			}
-			
-			obj = new GtfsFrequency();
-			
-			obj.trip_id = Integer.parseInt(splits[0]);
-			obj.start_time = splits[1];
-			obj.end_time = splits[2];
-			
-			list.add(obj);
-		}
-		
-		reader.close();
-		
-		GtfsFrequency[] out = new GtfsFrequency[list.size()];
-		for (int i = 0; i < out.length; i++) {
-			out[i] = list.get(i);
-		}
-		
-		return out;
+		trip_id = map.get("trip_id");
+		start_time = map.get("start_time");
+		end_time = map.get("end_time");
+		headway_secs = Integer.parseInt(map.get("headway_secs"));
+		exact_times = map.containsKey("exact_times") ? Integer.parseInt(map.get("exact_times")) : -1;
 	}
 }

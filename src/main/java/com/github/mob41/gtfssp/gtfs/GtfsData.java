@@ -8,10 +8,21 @@ public class GtfsData {
 	
 	private final String dataType;
 	
-	public GtfsData(String dataType) {
+	private final Map<String, String> stringMap;
+	
+	public GtfsData(String dataType, Map<String, String> stringMap) {
 		this.dataType = dataType;
+		this.stringMap = stringMap;
 	}
 
+	/***
+	 * Returns this GtfsData's String HashMap.
+	 * @return String HashMap
+	 */
+	public Map<String, String> getStringMap() {
+		return stringMap;
+	}
+	
 	/***
 	 * Returns this GtfsData as a HashMap.
 	 * @return HashMap GTFS data.
@@ -31,6 +42,10 @@ public class GtfsData {
 		}
 	}
 
+	/***
+	 * Returns the data type/originated file without extension (e.g. agency, routes, stops)
+	 * @return
+	 */
 	public String getDataType() {
 		return dataType;
 	}
