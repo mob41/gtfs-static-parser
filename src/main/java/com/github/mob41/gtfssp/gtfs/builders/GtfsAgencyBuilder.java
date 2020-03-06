@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import com.github.mob41.gtfssp.gtfs.AbstractGtfsBuilder;
 import com.github.mob41.gtfssp.gtfs.GtfsData;
 import com.github.mob41.gtfssp.gtfs.row.GtfsAgency;
 

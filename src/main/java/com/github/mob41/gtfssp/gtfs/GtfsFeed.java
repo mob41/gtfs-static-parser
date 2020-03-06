@@ -46,8 +46,19 @@ public class GtfsFeed {
 		this.feedInfo = feedInfo;
 	}
 	
+	protected void preFetchFeed(Map<String, GtfsData[]> map) throws IOException {
+		
+	}
+	
+	protected void postFetchFeed(Map<String, GtfsData[]> map) throws IOException {
+		
+	}
+	
 	public Map<String, GtfsData[]> fetchFeed() throws IOException {
 		Map<String, GtfsData[]> out = new HashMap<String, GtfsData[]>();
+		
+		preFetchFeed(out);
+		
 		int i;
 		GtfsTableSource<?> source;
 		for (i = 0; i < sources.length; i++) {
@@ -55,10 +66,14 @@ public class GtfsFeed {
 			System.out.println("Feed fetching from table source (" + (i + 1) + "/" + sources.length + ") " + source.getTableName());
 			out.put(source.getTableName(), (GtfsData[]) sources[i].fetchData());
 		}
+		
 		out.put("translations", this.getTranslations());
 		if (feedInfo != null) {
 			out.put("feed_info", new GtfsData[] { feedInfo });
 		}
+		
+		postFetchFeed(out);
+		
 		return out;
 	}
 

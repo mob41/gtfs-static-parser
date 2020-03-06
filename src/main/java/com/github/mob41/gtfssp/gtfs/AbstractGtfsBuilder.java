@@ -1,4 +1,4 @@
-package com.github.mob41.gtfssp.gtfs.builders;
+package com.github.mob41.gtfssp.gtfs;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.github.mob41.gtfssp.gtfs.GtfsData;
 import com.github.mob41.gtfssp.gtfs.row.GtfsTranslation;
 
 public abstract class AbstractGtfsBuilder<T> {
@@ -102,21 +101,39 @@ public abstract class AbstractGtfsBuilder<T> {
 	 * @throws IOException I/O Errors
 	 */
 	public T[] setDefaultLocaleFromStream(InputStream in, boolean skipHeader) throws IOException {
-		T[] out;
-		if ((out = fromStream(in, skipHeader)).length > 0 && maps.size() > 0) {
+		T[] out = fromStream(in, skipHeader);
+		
+		if (isLocaleManaged(defaultLocale)) {
+			out = handle(defaultLocale, out);
+		}
+		
+		if (out.length > 0 && maps.size() > 0) {
 			setDefaultLocale(maps);
 		}
+		
 		return out;
 	}
 	
+	protected boolean isLocaleManaged(String locale) {
+		return false;
+	}
+	
+	protected T[] handle(String locale, T[] objs) {
+		return objs;
+	}
+	
+	protected List<Map<String, String>> handle(String locale, List<Map<String, String>> objs) {
+		return objs;
+	}
+	
 	/***
 	 * Sets locale for localized GtfsData from stream
 	 * @param locale Lower-case language code in standards ISO 639-1 and ISO 639-2 (e.g. en, zh, zh-hk, zh-cn)
 	 * @param in InputStream with GTFS static data
 	 * @throws IOException I/O Errors
 	 */
-	public void setLocaleFromStream(String locale, InputStream in) throws IOException {
-		setLocaleFromStream(locale, in, true);
+	public T[] setLocaleFromStream(String locale, InputStream in) throws IOException {
+		return setLocaleFromStream(locale, in, true);
 	}
 	
 	/***
@@ -125,8 +142,8 @@ public abstract class AbstractGtfsBuilder<T> {
 	 * @param in InputStream with GTFS static data
 	 * @throws IOException I/O Errors
 	 */
-	public void setLocaleFromStream(String[] locales, InputStream in) throws IOException {
-		setLocaleFromStream(locales, in, true);
+	public T[] setLocaleFromStream(String[] locales, InputStream in) throws IOException {
+		return setLocaleFromStream(locales, in, true);
 	}
 	
 	/***
@@ -136,8 +153,8 @@ public abstract class AbstractGtfsBuilder<T> {
 	 * @param skipHeader Skip the first row containing header names
 	 * @throws IOException I/O Errors
 	 */
-	public void setLocaleFromStream(String locale, InputStream in, boolean skipHeader) throws IOException {
-		setLocaleFromStream(new String[] { locale }, in, skipHeader);
+	public T[] setLocaleFromStream(String locale, InputStream in, boolean skipHeader) throws IOException {
+		return setLocaleFromStream(new String[] { locale }, in, skipHeader);
 	}
 	
 	/***
@@ -147,10 +164,25 @@ public abstract class AbstractGtfsBuilder<T> {
 	 * @param skipHeader Skip the first row containing header names
 	 * @throws IOException I/O Errors
 	 */
-	public void setLocaleFromStream(String[] locales, InputStream in, boolean skipHeader) throws IOException {
-		if (fromStream(in, skipHeader).length > 0 && maps.size() > 0) {
+	public T[] setLocaleFromStream(String[] locales, InputStream in, boolean skipHeader) throws IOException {
+		T[] out = fromStream(in, skipHeader);
+		
+		String localeValue = null;
+		for (int i = 0; i < locales.length; i++) {
+			if (isLocaleManaged(locales[i])) {
+				localeValue = locales[i];
+				break;
+			}
+		}
+		if (localeValue != null) {
+			out = handle(localeValue, out);
+		}
+		
+		if (out.length > 0 && maps.size() > 0) {
 			setLocale(locales, maps);
 		}
+		
+		return out;
 	}
 	
 	public void setDefaultLocale(List<Map<String, String>> maps) {
@@ -164,6 +196,9 @@ public abstract class AbstractGtfsBuilder<T> {
 	
 	public void setLocale(String[] locales, List<Map<String, String>> maps) {
 		for (String locale : locales) {
+			if (isLocaleManaged(locale)) {
+				maps = handle(locale, maps);
+			}
 			localizedMaps.put(locale, maps);
 		}
 	}

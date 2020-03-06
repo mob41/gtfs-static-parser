@@ -2,7 +2,6 @@ package com.github.mob41.gtfssp.gtfs;
 
 import java.io.IOException;
 
-import com.github.mob41.gtfssp.gtfs.builders.AbstractGtfsBuilder;
 import com.github.mob41.gtfssp.gtfs.builders.GtfsAgencyBuilder;
 import com.github.mob41.gtfssp.gtfs.builders.GtfsCalendarBuilder;
 import com.github.mob41.gtfssp.gtfs.builders.GtfsCalendarDatesBuilder;
@@ -67,8 +66,17 @@ public class GtfsTableSource<T> {
 		return translations;
 	}
 	
+	public AbstractGtfsBuilder<T> getCustomTableBuilder(String tableName){
+		return null;
+	}
+	
 	@SuppressWarnings("unchecked")
-	private AbstractGtfsBuilder<T> getTableBuilder(String tableName) {
+	private final AbstractGtfsBuilder<T> getTableBuilder(String tableName) {
+		AbstractGtfsBuilder<T> spec = this.getCustomTableBuilder(tableName);
+		if (spec != null) {
+			return spec;
+		}
+		
 		if (tableName.equals("agency")) {
 			return (AbstractGtfsBuilder<T>) new GtfsAgencyBuilder();
 		} else if (tableName.equals("calendar")) {

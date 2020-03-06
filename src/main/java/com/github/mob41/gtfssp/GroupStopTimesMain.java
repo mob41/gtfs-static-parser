@@ -20,6 +20,9 @@ import com.github.mob41.gtfssp.gtfs.GtfsFeed;
 import com.github.mob41.gtfssp.gtfs.GtfsLocalizedSource;
 import com.github.mob41.gtfssp.gtfs.GtfsTableSource;
 import com.github.mob41.gtfssp.gtfs.builders.GtfsStopTimesBuilder;
+import com.github.mob41.gtfssp.gtfs.ext.gtw.GtwGtfsFeed;
+import com.github.mob41.gtfssp.gtfs.ext.hktransit.HkTransitGtfsFeed;
+import com.github.mob41.gtfssp.gtfs.row.GtfsFeedInfo;
 import com.github.mob41.gtfssp.gtfs.row.GtfsRoute;
 import com.github.mob41.gtfssp.gtfs.row.GtfsStop;
 import com.github.mob41.gtfssp.gtfs.row.GtfsStopTime;
@@ -29,10 +32,10 @@ public class GroupStopTimesMain {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("Trusting ssl");
+		//GtwGtfsFeed.CONSOLE_LOGGING = true;
 		trustAllSsl();
 		System.out.println("preapring sources");
-		GtfsTableSource<?>[] sources = generateSources();
-		GtfsFeed feed = new GtfsFeed(sources);
+		GtfsFeed feed = new HkTransitGtfsFeed();
 		System.out.println("Fething feed");
 		Map<String, GtfsData[]> map = feed.fetchFeed();
 		Iterator<String> it = map.keySet().iterator();
@@ -53,38 +56,7 @@ public class GroupStopTimesMain {
 		GtfsFeed.makeZip("test-" + System.currentTimeMillis() + ".zip", map);
 	}
 	
-	private static GtfsTableSource<?>[] generateSources() throws IOException{
-		final String PREFIX = "https://static.data.gov.hk/td/pt-headway-";
-		final String SUFFIX = ".txt";
-		final String[] LANG_LOCAL = {
-				"en",
-				"zh-hk",
-				"zh-cn"
-		};
-		final String[] LANG_ONLINE = {
-				"en",
-				"tc",
-				"sc"
-		};
-		GtfsTableSource<?>[] tables = new GtfsTableSource<?>[GtfsFeed.TABLES.length];
-		GtfsLocalizedSource[] localizedSources;
-		for (int i = 0; i < GtfsFeed.TABLES.length; i++) {
-			boolean translationAllowed = 
-					GtfsFeed.TABLES[i].equals("stops") ||
-					GtfsFeed.TABLES[i].equals("routes") || 
-					GtfsFeed.TABLES[i].equals("trips") || 
-					GtfsFeed.TABLES[i].equals("agency");
-			localizedSources = new GtfsLocalizedSource[translationAllowed ? LANG_LOCAL.length : 1];
-			for (int j = 0; j < LANG_LOCAL.length; j++) {
-				localizedSources[j] = new GtfsLocalizedSource(LANG_LOCAL[j], PREFIX + LANG_ONLINE[j] + "/" + GtfsFeed.TABLES[i] + ".txt");
-				if (!translationAllowed) {
-					break;
-				}
-			}
-			tables[i] = new GtfsTableSource<>(GtfsFeed.TABLES[i], localizedSources);
-		}
-		return tables;
-	}
+	
 	
 	private static void trustAllSsl() {
 		try {

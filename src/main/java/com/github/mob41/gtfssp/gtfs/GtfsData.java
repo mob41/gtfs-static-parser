@@ -30,7 +30,7 @@ public class GtfsData {
 	public Map<String, Object> getMap() {
 		try {
 			Map<String, Object> myObjectAsDict = new HashMap<String, Object>();    
-			Field[] allFields = this.getClass().getDeclaredFields();
+			Field[] allFields = this.getClass().getFields();
 		    for (Field field : allFields) {
 		        Object value = field.get(this);
 		        myObjectAsDict.put(field.getName(), value);
