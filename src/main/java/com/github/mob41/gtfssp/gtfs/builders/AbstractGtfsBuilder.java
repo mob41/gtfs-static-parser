@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.github.mob41.gtfssp.gtfs.GtfsData;
-import com.github.mob41.gtfssp.gtfs.row.GtfsTranslations;
+import com.github.mob41.gtfssp.gtfs.row.GtfsTranslation;
 
 public abstract class AbstractGtfsBuilder<T> {
 	
@@ -90,8 +90,8 @@ public abstract class AbstractGtfsBuilder<T> {
 	 * @param in InputStream with GTFS static data
 	 * @throws IOException I/O Errors
 	 */
-	public void setDefaultLocaleFromStream(InputStream in) throws IOException {
-		setDefaultLocaleFromStream(in, true);
+	public T[] setDefaultLocaleFromStream(InputStream in) throws IOException {
+		return setDefaultLocaleFromStream(in, true);
 	}
 	
 	/***
@@ -101,10 +101,12 @@ public abstract class AbstractGtfsBuilder<T> {
 	 * @param skipHeader Skip the first row containing header names
 	 * @throws IOException I/O Errors
 	 */
-	public void setDefaultLocaleFromStream(InputStream in, boolean skipHeader) throws IOException {
-		if (fromStream(in, skipHeader).length > 0 && maps.size() > 0) {
+	public T[] setDefaultLocaleFromStream(InputStream in, boolean skipHeader) throws IOException {
+		T[] out;
+		if ((out = fromStream(in, skipHeader)).length > 0 && maps.size() > 0) {
 			setDefaultLocale(maps);
 		}
+		return out;
 	}
 	
 	/***
@@ -167,14 +169,14 @@ public abstract class AbstractGtfsBuilder<T> {
 	}
 	
 	/***
-	 * Finds the deltas in each localized GTFS data and combines them into an array of <code>GtfsTranslations</code> instances.
-	 * If default locale maps are not built, an empty array will be returned.
+	 * Finds the deltas in each localized GTFS data and combines them into an array of <code>GtfsTranslation</code> instances.
+	 * If default locale maps are not built, an <code>IllegalStateException</code> will be thrown.
 	 * @return <code>GtfsTranslations</code> array
 	 */
-	public GtfsTranslations[] getTranslations() {
+	public GtfsTranslation[] getTranslations() {
 		if (defaultLocaleMaps == null) {
-			return new GtfsTranslations[0];
-			//throw new IllegalStateException("Default localized maps are not built and set.");
+			//return null;
+			throw new IllegalStateException("Default localized maps are not built and set.");
 		}
 		
 		Set<String> deltas = new HashSet<String>();
@@ -207,7 +209,7 @@ public abstract class AbstractGtfsBuilder<T> {
 
 		//List<Map<String, String>> out = new ArrayList<Map<String, String>>();
 		//Map<String, String> valMap;
-		List<GtfsTranslations> outList = new ArrayList<GtfsTranslations>();
+		List<GtfsTranslation> outList = new ArrayList<GtfsTranslation>();
 		List<Map<String, String>> list;
 		Map<String, String> map;
 		Map<String, String> newMap;
@@ -227,12 +229,12 @@ public abstract class AbstractGtfsBuilder<T> {
 					newMap.put("field_name", deltaKey);
 					newMap.put("language", localeKey);
 					newMap.put("translation", map.get(deltaKey));
-					outList.add(new GtfsTranslations(newMap));
+					outList.add(new GtfsTranslation(newMap));
 				}
 			}
 		}
 		
-		GtfsTranslations[] out = new GtfsTranslations[outList.size()];
+		GtfsTranslation[] out = new GtfsTranslation[outList.size()];
 		for (i = 0; i < out.length; i++) {
 			out[i] = outList.get(i);
 		}
