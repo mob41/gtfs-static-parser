@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import com.github.mob41.gtfssp.gtfs.GtfsAgency;
 import com.github.mob41.gtfssp.gtfs.GtfsData;
+import com.github.mob41.gtfssp.gtfs.row.GtfsAgency;
 
 public class GtfsAgencyBuilder extends AbstractGtfsBuilder<GtfsAgency> {
 
@@ -26,6 +26,11 @@ public class GtfsAgencyBuilder extends AbstractGtfsBuilder<GtfsAgency> {
 			out[i] = (GtfsAgency) data[i];
 		}
 		return out;
+	}
+
+	@Override
+	public String getHeaderType(String header) {
+		return "string";
 	}
 
 }

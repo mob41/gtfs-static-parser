@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import com.github.mob41.gtfssp.gtfs.GtfsData;
-import com.github.mob41.gtfssp.gtfs.GtfsStopTime;
+import com.github.mob41.gtfssp.gtfs.row.GtfsStopTime;
 
 public class GtfsStopTimesBuilder extends AbstractGtfsBuilder<GtfsStopTime> {
 
@@ -26,6 +26,17 @@ public class GtfsStopTimesBuilder extends AbstractGtfsBuilder<GtfsStopTime> {
 			out[i] = (GtfsStopTime) data[i];
 		}
 		return out;
+	}
+
+	@Override
+	public String getHeaderType(String header) {
+		if (header.equals("shape_dist_traveled")){
+			return "float";
+		} else if (header.equals("stop_sequence") || header.equals("pickup_type") || header.equals("drop_off_type") || header.equals("timepoint")){
+			return "int";
+		} else {
+			return "string";
+		}
 	}
 
 }

@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import com.github.mob41.gtfssp.gtfs.GtfsData;
-import com.github.mob41.gtfssp.gtfs.GtfsRoute;
+import com.github.mob41.gtfssp.gtfs.row.GtfsRoute;
 
 public class GtfsRoutesBuilder extends AbstractGtfsBuilder<GtfsRoute> {
 
@@ -26,6 +26,15 @@ public class GtfsRoutesBuilder extends AbstractGtfsBuilder<GtfsRoute> {
 			out[i] = (GtfsRoute) data[i];
 		}
 		return out;
+	}
+
+	@Override
+	public String getHeaderType(String header) {
+		if (header.equals("route_type") || header.equals("route_sort_order")){
+			return "int";
+		} else {
+			return "string";
+		}
 	}
 
 }

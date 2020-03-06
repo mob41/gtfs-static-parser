@@ -11,11 +11,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.github.mob41.gtfssp.gtfs.GtfsData;
+import com.github.mob41.gtfssp.gtfs.row.GtfsTranslations;
 
 public abstract class AbstractGtfsBuilder<T> {
 	
@@ -100,8 +103,7 @@ public abstract class AbstractGtfsBuilder<T> {
 	 */
 	public void setDefaultLocaleFromStream(InputStream in, boolean skipHeader) throws IOException {
 		if (fromStream(in, skipHeader).length > 0 && maps.size() > 0) {
-			defaultLocaleMaps = maps;
-			localizedMaps.put(defaultLocale, maps);
+			setDefaultLocale(maps);
 		}
 	}
 	
@@ -145,24 +147,37 @@ public abstract class AbstractGtfsBuilder<T> {
 	 */
 	public void setLocaleFromStream(String[] locales, InputStream in, boolean skipHeader) throws IOException {
 		if (fromStream(in, skipHeader).length > 0 && maps.size() > 0) {
-			for (String locale : locales) {
-				localizedMaps.put(locale, maps);
-			}
+			setLocale(locales, maps);
+		}
+	}
+	
+	public void setDefaultLocale(List<Map<String, String>> maps) {
+		defaultLocaleMaps = maps;
+		localizedMaps.put(defaultLocale, maps);
+	}
+	
+	public void setLocale(String locale, List<Map<String, String>> maps) {
+		setLocale(new String[] { locale }, maps);
+	}
+	
+	public void setLocale(String[] locales, List<Map<String, String>> maps) {
+		for (String locale : locales) {
+			localizedMaps.put(locale, maps);
 		}
 	}
 	
 	/***
-	 * Finds the deltas in each localized GTFS data and combines them into one <code>HashMap</code> array.
-	 * If default locale maps are not built, previously built maps will be returned instead.
-	 * @return HashMap array
+	 * Finds the deltas in each localized GTFS data and combines them into an array of <code>GtfsTranslations</code> instances.
+	 * If default locale maps are not built, an empty array will be returned.
+	 * @return <code>GtfsTranslations</code> array
 	 */
-	public List<Map<String, String>> getLocalizedMaps() {
+	public GtfsTranslations[] getTranslations() {
 		if (defaultLocaleMaps == null) {
-			return maps;
+			return new GtfsTranslations[0];
 			//throw new IllegalStateException("Default localized maps are not built and set.");
 		}
 		
-		List<String> deltas = new ArrayList<String>();
+		Set<String> deltas = new HashSet<String>();
 		
 		String localeKey;
 		String mapKey;
@@ -182,30 +197,73 @@ public abstract class AbstractGtfsBuilder<T> {
 				while (objIt.hasNext()) {
 					mapKey = objIt.next();
 					if (!defMap.get(mapKey).equals(forMap.get(mapKey))) {
-						deltas.add(mapKey);
+						if (!deltas.contains(mapKey)) {
+							deltas.add(mapKey);
+						}
 					}
 				}
 			}
 		}
 
-		List<Map<String, String>> out = new ArrayList<Map<String, String>>();
-		Map<String, String> valMap;
-		
+		//List<Map<String, String>> out = new ArrayList<Map<String, String>>();
+		//Map<String, String> valMap;
+		List<GtfsTranslations> outList = new ArrayList<GtfsTranslations>();
+		List<Map<String, String>> list;
+		Map<String, String> map;
+		Map<String, String> newMap;
 		for (i = 0; i < defaultLocaleMaps.size(); i++) {
-			valMap = new HashMap<String, String>();
-			valMap.putAll(defaultLocaleMaps.get(i));
+			//valMap = new HashMap<String, String>();
+			//valMap.putAll(defaultLocaleMaps.get(i));
 			
 			for (String deltaKey : deltas) {
 				localeIt = localizedMaps.keySet().iterator();
 				while (localeIt.hasNext()) {
 					localeKey = localeIt.next();
-					valMap.put(deltaKey + "_" + localeKey, localizedMaps.get(localeKey).get(i).get(deltaKey));
+					list = localizedMaps.get(localeKey);
+					map = list.get(i);
+					
+					newMap = new HashMap<String, String>();
+					newMap.put("table_name", dataType);
+					newMap.put("field_name", deltaKey);
+					newMap.put("language", localeKey);
+					newMap.put("translation", map.get(deltaKey));
+					outList.add(new GtfsTranslations(newMap));
 				}
 			}
-			
-			out.add(valMap);
+		}
+		
+		GtfsTranslations[] out = new GtfsTranslations[outList.size()];
+		for (i = 0; i < out.length; i++) {
+			out[i] = outList.get(i);
 		}
 		return out;
+	}
+	
+	public int calculatePages(int rowLimit) {
+		return (int) Math.ceil(maps.size() / (float) rowLimit);
+	}
+	
+	public String[] getHeaders(){
+		return headers;
+	}
+	
+	public abstract String getHeaderType(String header);
+	
+	public String[] getHeaderTypes() {
+		String[] headers = getHeaders();
+		String[] headerTypes = new String[headers.length];
+		for (int i = 0; i < headerTypes.length; i++) {
+			headerTypes[i] = getHeaderType(headers[i]);
+		}
+		return headerTypes;
+	}
+	
+	public void setMaps(List<Map<String, String>> maps) {
+		this.maps = maps;
+	}
+	
+	public List<Map<String, String>> getMaps(){
+		return maps;
 	}
 	
 	/***
@@ -216,22 +274,33 @@ public abstract class AbstractGtfsBuilder<T> {
 		rebuild(maps, out);
 	}
 	
-	/***
-	 * Immediately build localized GtfsData from previously built GtfsData and rebuilds it into a CSV-formatted stream
-	 * @param maps GtfsData HashMaps
-	 */
-	public void rebuildLocalized(OutputStream out) throws IOException {
-		List<Map<String, String>> lm = getLocalizedMaps();
-		rebuild(lm, out);
+	public void rebuild(List<Map<String, String>> maps, OutputStream out) throws IOException {
+		rebuild(maps, out, true, 0, maps.size());
+	}
+	
+	public void rebuildWithPaging(List<Map<String, String>> maps, OutputStream out, int rowLimit, int pageIndex) throws IOException {
+		rebuildWithPaging(maps, out, true, rowLimit, pageIndex);
+	}
+	
+	public void rebuildWithPaging(List<Map<String, String>> maps, OutputStream out, boolean putHeaders, int rowLimit, int pageIndex) throws IOException {
+		int pages = calculatePages(rowLimit);
+		if (pageIndex < 0 || pageIndex >= pages) {
+			throw new IOException("Invalid page index: " + pageIndex);
+		}
+		int nextStart = (pageIndex + 1) * rowLimit;
+		int end = nextStart >= maps.size() ? maps.size() : nextStart;
+		rebuild(maps, out, putHeaders, rowLimit * pageIndex, end);
 	}
 	
 	/***
 	 * Rebuilds the provided HashMap data into a CSV-formatted stream
 	 * @param maps GtfsData HashMaps
+	 * @param putHeaders Put headers to the first row
+	 * @param start Start index
+	 * @param end End index
 	 */
-	public void rebuild(List<Map<String, String>> maps, OutputStream out) throws IOException{
+	public void rebuild(List<Map<String, String>> maps, OutputStream out, boolean putHeaders, int start, int end) throws IOException{
 		List<String> headers = new ArrayList<String>();
-		
 		Iterator<String> it;
 		String key;
 		for (Map<String, String> map : maps) {
@@ -246,19 +315,22 @@ public abstract class AbstractGtfsBuilder<T> {
 		Collections.sort(headers);
 		
 		List<String> rows = new ArrayList<String>();
-		
+
 		String val;
 		String row = "";
-		for (int i = 0; i < headers.size(); i++) {
-			val = headers.get(i);
-			row += val;
-			if (i != headers.size() - 1) {
-				row += ",";
-			}
-		}
-		rows.add(row);
 		
-		for (int i = 0; i < maps.size(); i++) {
+		if (putHeaders) {
+			for (int i = 0; i < headers.size(); i++) {
+				val = headers.get(i);
+				row += val;
+				if (i != headers.size() - 1) {
+					row += ",";
+				}
+			}
+			rows.add(row);
+		}
+		
+		for (int i = start; i < end; i++) {
 			row = "";
 			for (int j = 0; j < headers.size(); j++) {
 				val = maps.get(i).get(headers.get(j));

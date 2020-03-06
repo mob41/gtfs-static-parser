@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import com.github.mob41.gtfssp.gtfs.GtfsData;
-import com.github.mob41.gtfssp.gtfs.GtfsFareAttribute;
+import com.github.mob41.gtfssp.gtfs.row.GtfsFareAttribute;
 
 public class GtfsFareAttributesBuilder extends AbstractGtfsBuilder<GtfsFareAttribute> {
 
@@ -26,5 +26,18 @@ public class GtfsFareAttributesBuilder extends AbstractGtfsBuilder<GtfsFareAttri
 			out[i] = (GtfsFareAttribute) data[i];
 		}
 		return out;
+	}
+
+	@Override
+	public String getHeaderType(String header) {
+		if (header.equals("fare_id") || header.equals("currency_type") || header.equals("agency_id")) {
+			return "string";
+		} else if (header.equals("price")){
+			return "float";
+		} else if (header.equals("payment_method") || header.equals("transfers") || header.equals("transfer_duration")){
+			return "int";
+		} else {
+			return "string";
+		}
 	}
 }

@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import com.github.mob41.gtfssp.gtfs.GtfsData;
-import com.github.mob41.gtfssp.gtfs.GtfsFareRule;
+import com.github.mob41.gtfssp.gtfs.row.GtfsFareRule;
 
 public class GtfsFareRulesBuilder extends AbstractGtfsBuilder<GtfsFareRule> {
 
@@ -26,6 +26,11 @@ public class GtfsFareRulesBuilder extends AbstractGtfsBuilder<GtfsFareRule> {
 			out[i] = (GtfsFareRule) data[i];
 		}
 		return out;
+	}
+
+	@Override
+	public String getHeaderType(String header) {
+		return "string";
 	}
 
 }

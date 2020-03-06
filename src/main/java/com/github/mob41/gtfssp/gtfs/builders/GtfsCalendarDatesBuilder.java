@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import com.github.mob41.gtfssp.gtfs.GtfsCalendarDate;
 import com.github.mob41.gtfssp.gtfs.GtfsData;
+import com.github.mob41.gtfssp.gtfs.row.GtfsCalendarDate;
 
 public class GtfsCalendarDatesBuilder extends AbstractGtfsBuilder<GtfsCalendarDate> {
 
@@ -26,6 +26,15 @@ public class GtfsCalendarDatesBuilder extends AbstractGtfsBuilder<GtfsCalendarDa
 			out[i] = (GtfsCalendarDate) data[i];
 		}
 		return out;
+	}
+
+	@Override
+	public String getHeaderType(String header) {
+		if (header.equals("service_id")) {
+			return "string";
+		} else {
+			return "int";
+		}
 	}
 
 }

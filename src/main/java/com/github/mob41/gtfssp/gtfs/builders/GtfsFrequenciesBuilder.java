@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import com.github.mob41.gtfssp.gtfs.GtfsData;
-import com.github.mob41.gtfssp.gtfs.GtfsFrequency;
+import com.github.mob41.gtfssp.gtfs.row.GtfsFrequency;
 
 public class GtfsFrequenciesBuilder extends AbstractGtfsBuilder<GtfsFrequency> {
 
@@ -26,6 +26,15 @@ public class GtfsFrequenciesBuilder extends AbstractGtfsBuilder<GtfsFrequency> {
 			out[i] = (GtfsFrequency) data[i];
 		}
 		return out;
+	}
+
+	@Override
+	public String getHeaderType(String header) {
+		if (header.equals("headway_secs") || header.equals("exact_times")){
+			return "int";
+		} else {
+			return "string";
+		}
 	}
 
 }

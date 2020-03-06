@@ -1,6 +1,8 @@
-package com.github.mob41.gtfssp.gtfs;
+package com.github.mob41.gtfssp.gtfs.row;
 
 import java.util.Map;
+
+import com.github.mob41.gtfssp.gtfs.GtfsData;
 
 public class GtfsFareRule extends GtfsData {
 	

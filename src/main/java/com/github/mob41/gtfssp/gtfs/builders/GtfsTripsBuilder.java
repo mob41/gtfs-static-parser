@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import com.github.mob41.gtfssp.gtfs.GtfsData;
-import com.github.mob41.gtfssp.gtfs.GtfsTrip;
+import com.github.mob41.gtfssp.gtfs.row.GtfsTrip;
 
 public class GtfsTripsBuilder extends AbstractGtfsBuilder<GtfsTrip> {
 
@@ -26,6 +26,11 @@ public class GtfsTripsBuilder extends AbstractGtfsBuilder<GtfsTrip> {
 			out[i] = (GtfsTrip) data[i];
 		}
 		return out;
+	}
+
+	@Override
+	public String getHeaderType(String header) {
+		return "string";
 	}
 
 }
