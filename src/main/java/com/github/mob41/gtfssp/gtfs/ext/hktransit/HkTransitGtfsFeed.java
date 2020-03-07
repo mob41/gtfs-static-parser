@@ -95,43 +95,58 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 				list.add(trans);
 			}
 		}
-		GtfsTranslation[] outTrans = new GtfsTranslation[origin.length];
+		GtfsTranslation[] outTrans = new GtfsTranslation[list.size()];
 		for (int i = 0; i < outTrans.length; i++) {
 			outTrans[i] = list.get(i);
 		}
 		map.put("translations", outTrans);
 	}
 	
-	private static GtwGtfsTrip getTripByTripId(GtwGtfsTrip[] trips, String tripId) {
-		for (int i = 0; i < trips.length; i++) {
-			if (trips[i].trip_id.equals(tripId)) {
-				return trips[i];
+	private static GtwGtfsTrip getTripByRouteId(GtwGtfsTrip[] trips, String routeId) {
+		int start = 0;
+		int end = trips.length - 1;
+		int mid;
+		int compare;
+		while (start <= end) {
+			mid = (int) Math.floor((start + end) / 2.0);
+			compare = routeId.compareTo(trips[mid].route_id);
+			if (compare > 0) {
+				start = mid + 1;
+			} else if (compare < 0){
+				end = mid - 1;
+			} else {
+				return trips[mid];
 			}
 		}
 		return null;
 	}
 	
-	private static GtwGtfsStopTimePath[] getFirstLastStopByPathId(Map<String, GtfsData[]> map, String pathId){
-		GtwGtfsStopTimePath[] paths = (GtwGtfsStopTimePath[]) map.get("stop_time_paths");
-		
-		Arrays.sort(paths, new Comparator<GtwGtfsStopTimePath>() {
-			@Override
-			public int compare(GtwGtfsStopTimePath o1, GtwGtfsStopTimePath o2) {
-				return o1.stop_sequence - o2.stop_sequence;
-			}
-		});
-		
-		Arrays.sort(paths, new Comparator<GtwGtfsStopTimePath>() {
-			@Override
-			public int compare(GtwGtfsStopTimePath o1, GtwGtfsStopTimePath o2) {
-				return o1.path_id.compareTo(o2.path_id);
-			}
-		});
-		
+	private static GtwGtfsStopTimePath[] getFirstLastStopByPathId(GtwGtfsStopTimePath[] paths, String pathId){
 		List<GtwGtfsStopTimePath> path = new ArrayList<GtwGtfsStopTimePath>();
-		for (int i = 0; i < paths.length; i++) {
+		
+		int start = 0;
+		int end = paths.length - 1;
+		int mid;
+		int compare;
+		while (start < end) {
+			mid = (int) Math.floor((start + end) / 2.0);
+			compare = paths[mid].path_id.compareTo(pathId);
+			if (compare < 0) {
+				start = mid + 1;
+			} else {
+				end = mid;
+			}
+		}
+		
+		if (start < 0 || start >= paths.length) {
+			return null;
+		}
+		
+		for (int i = start; i < paths.length; i++) {
 			if (paths[i].path_id.equals(pathId)) {
 				path.add(paths[i]);
+			} else {
+				break;
 			}
 		}
 		
@@ -152,6 +167,35 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 		for (int i = 0; i < trips.length; i++) {
 			trips[i] = (GtwGtfsTrip) data[i];
 		}
+		
+		Arrays.sort(trips, new Comparator<GtwGtfsTrip>() {
+
+			@Override
+			public int compare(GtwGtfsTrip o1, GtwGtfsTrip o2) {
+				return o1.route_id.compareTo(o2.route_id);
+			}
+		});
+		
+		GtfsData[] pathsData = map.get("stop_time_paths");
+		GtwGtfsStopTimePath[] paths = new GtwGtfsStopTimePath[pathsData.length];
+		for (int i = 0; i < pathsData.length; i++) {
+			paths[i] = (GtwGtfsStopTimePath) pathsData[i];
+		}
+		
+		Arrays.sort(paths, new Comparator<GtwGtfsStopTimePath>() {
+			@Override
+			public int compare(GtwGtfsStopTimePath o1, GtwGtfsStopTimePath o2) {
+				return o1.stop_sequence - o2.stop_sequence;
+			}
+		});
+		
+		Arrays.sort(paths, new Comparator<GtwGtfsStopTimePath>() {
+			@Override
+			public int compare(GtwGtfsStopTimePath o1, GtwGtfsStopTimePath o2) {
+				return o1.path_id.compareTo(o2.path_id);
+			}
+		});
+		
 		Iterator<String> it = routeGroups.keySet().iterator();
 		String key;
 		List<GtfsRoute> list;
@@ -168,8 +212,14 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 			done++;
 			
 			list = routeGroups.get(key);
-			originTrip = getTripByTripId(trips, key);
-			originFirstLastStops = getFirstLastStopByPathId(map, originTrip.path_id);
+			originTrip = getTripByRouteId(trips, key);
+			
+			if (originTrip == null) {
+				System.out.println("Error finding origin trip " + key);
+				continue;
+			}
+			
+			originFirstLastStops = getFirstLastStopByPathId(paths, originTrip.path_id);
 			if (originFirstLastStops == null) {
 				System.out.println("Error finding origin path ID " + originTrip.path_id + " for " + key + " to get direction ID");
 				continue;
@@ -178,7 +228,7 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 				route = list.get(i);
 				for (int j = 0; j < trips.length; j++) {
 					if (trips[j].route_id.equals(route.route_id)) {
-						targetFirstLastStops = getFirstLastStopByPathId(map, trips[j].path_id);
+						targetFirstLastStops = getFirstLastStopByPathId(paths, trips[j].path_id);
 						
 						if (targetFirstLastStops == null) {
 							System.out.println("Error finding path ID " + trips[j].path_id + " for " + trips[j].trip_id + " to get direction ID");

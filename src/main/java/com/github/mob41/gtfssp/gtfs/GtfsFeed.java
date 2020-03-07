@@ -21,6 +21,12 @@ import com.google.gson.Gson;
 public class GtfsFeed {
 	
 	public static final String[] TABLES = new String[] {
+			"routes",
+			"stop_times",
+			"trips"
+		};
+	
+	public static final String[] TABLESX = new String[] {
 			"agency",
 			"calendar",
 			"calendar_dates",
