@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +23,36 @@ import com.github.mob41.gtfssp.gtfs.row.GtfsTranslation;
 public abstract class AbstractGtfsBuilder<T> {
 	
 	private static final String DEFAULT_LOCALE = "en";
+	
+	private static final String[] TRANSLATION_TABLES = {
+		"agency",
+		"stops",
+		"routes",
+		"trips",
+		"stop_times",
+		"pathways",
+		"levels"
+	};
+	
+	private static final String[] TRANSLATION_RECORD_IDS = {
+		"agency_id",
+		"stop_id",
+		"route_id",
+		"trip_id",
+		"trip_id",
+		"pathway_id",
+		"level_id"
+	};
+	
+	private static final String[] TRANSLATION_RECORD_SUB_IDS = {
+		null,
+		null,
+		null,
+		null,
+		"stop_sequence",
+		null,
+		null
+	};
 	
 	private final String dataType;
 	
@@ -248,6 +279,8 @@ public abstract class AbstractGtfsBuilder<T> {
 		List<Map<String, String>> list;
 		Map<String, String> map;
 		Map<String, String> newMap;
+		int recordIdIndex;
+		int j;
 		for (i = 0; i < defaultLocaleMaps.size(); i++) {
 			//valMap = new HashMap<String, String>();
 			//valMap.putAll(defaultLocaleMaps.get(i));
@@ -264,6 +297,25 @@ public abstract class AbstractGtfsBuilder<T> {
 					newMap.put("field_name", deltaKey);
 					newMap.put("language", localeKey);
 					newMap.put("translation", map.get(deltaKey));
+					
+					recordIdIndex = -1;
+					for (j = 0; j < TRANSLATION_TABLES.length; j++) {
+						if (TRANSLATION_TABLES[j].equals(dataType)) {
+							recordIdIndex = j;
+							break;
+						}
+					}
+					
+					if (recordIdIndex != -1) {
+						newMap.put("record_id", map.get(TRANSLATION_RECORD_IDS[recordIdIndex]));
+						
+						if (TRANSLATION_RECORD_SUB_IDS[recordIdIndex] != null) {
+							newMap.put("record_sub_id", map.get(TRANSLATION_RECORD_SUB_IDS[recordIdIndex]));
+						}
+					} else {
+						newMap.put("field_value", defaultLocaleMaps.get(i).get(deltaKey));
+					}
+					
 					outList.add(new GtfsTranslation(newMap));
 				}
 			}

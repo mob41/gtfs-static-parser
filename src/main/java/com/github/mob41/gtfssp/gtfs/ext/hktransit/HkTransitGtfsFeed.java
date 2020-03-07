@@ -45,7 +45,7 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 	
 	public static GtfsFeedInfo generateFeedInfo() {
 		return new GtfsFeedInfo(
-				"DATA.GOV.HK",
+				"DATA.GOV.HK (generated from gtfs-static-parser)",
 				"https://data.gov.hk",
 				"en",
 				Long.toString(System.currentTimeMillis())

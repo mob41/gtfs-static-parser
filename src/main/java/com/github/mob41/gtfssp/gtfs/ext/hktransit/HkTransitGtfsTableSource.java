@@ -15,6 +15,8 @@ public class HkTransitGtfsTableSource<T> extends GtfsTableSource<T> {
 	public AbstractGtfsBuilder<T> getCustomTableBuilder(String tableName) {
 		if (tableName.equals("agency")) {
 			return (AbstractGtfsBuilder<T>) new HkTransitGtfsAgencyBuilder();
+		} else if (tableName.equals("trips")) {
+			return (AbstractGtfsBuilder<T>) new HkTransitGtfsTripsBuilder();
 		}
 		return null;
 	}

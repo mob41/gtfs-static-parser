@@ -21,17 +21,17 @@ import com.google.gson.Gson;
 public class GtfsFeed {
 	
 	public static final String[] TABLES = new String[] {
-		"agency",
-		"calendar",
-		"calendar_dates",
-		"fare_attributes",
-		"fare_rules",
-		"frequencies",
-		"routes",
-		"stops",
-		"stop_times",
-		"trips"
-	};
+			"agency",
+			"calendar",
+			"calendar_dates",
+			"fare_attributes",
+			"fare_rules",
+			"frequencies",
+			"routes",
+			"stops",
+			"stop_times",
+			"trips"
+		};
 	
 	private final GtfsTableSource<?>[] sources;
 
@@ -143,7 +143,7 @@ public class GtfsFeed {
         		map = datum.getMap();
         		for (int j = 0; j < headers.size(); j++) {
         			val = map.get(headers.get(j));
-        			if (val != null && !val.equals(-1)){
+        			if (val != null && !val.equals(-1) && !val.equals(-1.0)){
         				writer.print(val);
         			}
         			
