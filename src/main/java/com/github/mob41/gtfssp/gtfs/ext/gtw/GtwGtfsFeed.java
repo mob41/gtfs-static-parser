@@ -1,5 +1,6 @@
 package com.github.mob41.gtfssp.gtfs.ext.gtw;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,7 +35,7 @@ public class GtwGtfsFeed extends GtfsFeed{
 	}
 	
 	@Override
-	public void postFetchFeed(Map<String, GtfsData[]> map) {
+	protected void postFetchFeed(Map<String, GtfsData[]> map) throws IOException{
 		Iterator<String> it = map.keySet().iterator();
 		String key;
 		GtfsData[] newStopTimePaths = null;
@@ -66,13 +67,13 @@ public class GtwGtfsFeed extends GtfsFeed{
 		}
 	}
 	
-	protected void reportMessage(String msg) {
+	public static void reportMessage(String msg) {
 		if (CONSOLE_LOGGING) {
 			Console.sameLine(msg);
 		}
 	}
 	
-	protected void finishLine() {
+	public static void finishLine() {
 		if (CONSOLE_LOGGING) {
 			Console.resetLastMessage();
 			Console.println("");
