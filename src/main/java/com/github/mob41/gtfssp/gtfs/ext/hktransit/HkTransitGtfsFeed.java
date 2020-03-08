@@ -61,13 +61,13 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 		super.postFetchFeed(map);
 		
 		groupSimilarRoutes((GtfsRoute[]) map.get("routes"));
+		modifyTrips(map);
+		
 		GtfsRoute[] outRoutes = new GtfsRoute[newRoutes.size()];
 		for (int i = 0; i < outRoutes.length; i++) {
 			outRoutes[i] = newRoutes.get(i);
 		}
 		map.put("routes", outRoutes);
-		
-		modifyTrips(map);
 	}
 	
 	private Map<String, List<GtfsRoute>> routeGroups;
@@ -107,7 +107,7 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 		int end = trips.length - 1;
 		int mid;
 		int compare;
-		while (start <= end) {
+		while (start < end) {
 			mid = (int) Math.floor((start + end) / 2.0);
 			compare = routeId.compareTo(trips[mid].route_id);
 			if (compare > 0) {
@@ -115,9 +115,14 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 			} else if (compare < 0){
 				end = mid - 1;
 			} else {
-				return trips[mid];
+				end = mid;
 			}
 		}
+		
+		if (start >= 0 && start < trips.length && trips[start].route_id.equals(routeId)) {
+			return trips[start];
+		}
+		System.out.println("Not found " + routeId + " with start " + start + " end " + end);
 		return null;
 	}
 	
@@ -130,15 +135,17 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 		int compare;
 		while (start < end) {
 			mid = (int) Math.floor((start + end) / 2.0);
-			compare = paths[mid].path_id.compareTo(pathId);
-			if (compare < 0) {
+			compare = pathId.compareTo(paths[mid].path_id);
+			if (compare > 0) {
 				start = mid + 1;
+			} else if (compare < 0) {
+				end = mid - 1;
 			} else {
 				end = mid;
 			}
 		}
 		
-		if (start < 0 || start >= paths.length) {
+		if (start < 0 || start >= paths.length || !paths[start].path_id.equals(pathId)) {
 			return null;
 		}
 		
@@ -161,6 +168,15 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 		return out;
 	}
 	
+	private void sortTrips(GtwGtfsTrip[] trips) {
+		Arrays.sort(trips, new Comparator<GtwGtfsTrip>() {
+			@Override
+			public int compare(GtwGtfsTrip o1, GtwGtfsTrip o2) {
+				return o1.route_id.compareTo(o2.route_id);
+			}
+		});
+	}
+	
 	private void modifyTrips(Map<String, GtfsData[]> map) {
 		GtfsData[] data = map.get("trips");
 		GtwGtfsTrip[] trips = new GtwGtfsTrip[data.length];
@@ -168,13 +184,7 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 			trips[i] = (GtwGtfsTrip) data[i];
 		}
 		
-		Arrays.sort(trips, new Comparator<GtwGtfsTrip>() {
-
-			@Override
-			public int compare(GtwGtfsTrip o1, GtwGtfsTrip o2) {
-				return o1.route_id.compareTo(o2.route_id);
-			}
-		});
+		sortTrips(trips);
 		
 		GtfsData[] pathsData = map.get("stop_time_paths");
 		GtwGtfsStopTimePath[] paths = new GtwGtfsStopTimePath[pathsData.length];
@@ -207,6 +217,8 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 		GtwGtfsStopTimePath[] originFirstLastStops;
 		GtwGtfsStopTimePath[] targetFirstLastStops;
 		GtwGtfsTrip originTrip;
+		int unlike = 0;
+		int listCount = 0;
 		while (it.hasNext()) {
 			key = it.next();
 			done++;
@@ -215,12 +227,14 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 			originTrip = getTripByRouteId(trips, key);
 			
 			if (originTrip == null) {
+				finishLine();
 				System.out.println("Error finding origin trip " + key);
 				continue;
 			}
 			
 			originFirstLastStops = getFirstLastStopByPathId(paths, originTrip.path_id);
 			if (originFirstLastStops == null) {
+				finishLine();
 				System.out.println("Error finding origin path ID " + originTrip.path_id + " for " + key + " to get direction ID");
 				continue;
 			}
@@ -231,6 +245,7 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 						targetFirstLastStops = getFirstLastStopByPathId(paths, trips[j].path_id);
 						
 						if (targetFirstLastStops == null) {
+							finishLine();
 							System.out.println("Error finding path ID " + trips[j].path_id + " for " + trips[j].trip_id + " to get direction ID");
 							continue;
 						}
@@ -241,8 +256,18 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 						} else if (originFirstLastStops[1].stop_id.equals(targetFirstLastStops[0].stop_id)) {
 							directionId = 2;
 						} else {
-							directionId = 1;
+							newRoutes.add(route);
+							unlike++;
+							continue;
+							//directionId = 1;
+							/*
 							System.out.println("Unknown direction ID for " + trips[j].trip_id);
+							System.out.println("OriginPathID: " + originTrip.path_id);
+							System.out.println("TargetPathID: " + trips[j].path_id);
+							System.out.println("OriginFirst: " + originFirstLastStops[0].stop_id + "(" + originFirstLastStops[0].stop_sequence + ") Last: " + originFirstLastStops[1].stop_id + "(" + originFirstLastStops[1].stop_sequence + ")");
+							System.out.println("targetFirst: " + targetFirstLastStops[0].stop_id + "(" + targetFirstLastStops[0].stop_sequence + ") Last: " + targetFirstLastStops[1].stop_id + "(" + targetFirstLastStops[1].stop_sequence + ")");
+							System.out.println("Error");
+							*/
 						}
 						
 						String blockId = key + "-" + directionId;
@@ -256,6 +281,8 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 						trips[j].getStringMap().put("block_id", blockId);
 						trips[j].getStringMap().put("direction_id", Integer.toString(directionId));
 						modifyTranslations(map, key, trips[j].trip_id);
+
+						sortTrips(trips);
 					}
 				}
 			}
@@ -267,6 +294,7 @@ public class HkTransitGtfsFeed extends GtwGtfsFeed {
 			}
 		}
 		finishLine();
+		System.out.println("There are " + unlike + " unlike routes.");
 	}
 	
 	private void groupSimilarRoutes(GtfsRoute[] routes) {
